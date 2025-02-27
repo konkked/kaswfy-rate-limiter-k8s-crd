@@ -1,9 +1,19 @@
-apiVersion: kaswfy.kaswfy.io/v1
+apiVersion: kaswfy.io/v1
 kind: RateLimitConfig
 metadata:
+  name: b-app-web-ratelimit
+  namespace: default
   labels:
     app.kubernetes.io/name: rate-limiter-operator
     app.kubernetes.io/managed-by: kustomize
-  name: ratelimitconfig-sample
 spec:
-  # TODO(user): Add fields here
+  deploymentName: "b-app-web"
+  maxRequestsByIpRps: 1000
+  maxRequestsByUserRps: 500
+  maxRequestsByLikeRouteRps: 2000
+  clusterName: "b-app-cluster"
+  headerRateLimits:
+  - headerName: "X-Tenant-ID"
+    rps: 200
+  ingressPort: 8081
+  egressPort: 8082
