@@ -20,6 +20,10 @@ type RateLimitConfigSpec struct {
 	ClusterName string `json:"clusterName"`
 	// HeaderRateLimits defines rate limits based on headers
 	HeaderRateLimits []HeaderRateLimit `json:"headerRateLimits,omitempty"`
+	// IngressPort specifies the port for ingress traffic (optional)
+	IngressPort *int32 `json:"ingressPort,omitempty"`
+	// EgressPort specifies the port for egress traffic (optional)
+	EgressPort *int32 `json:"egressPort,omitempty"`
 }
 
 // HeaderRateLimit defines rate limits for a specific header

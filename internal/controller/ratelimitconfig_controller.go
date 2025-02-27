@@ -50,10 +50,15 @@ func (r *RateLimitConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 	}
 
-	// Determine Envoy port (default to 8080 if unset)
-	envoyPort := int32(8080)
-	if config.Spec.EnvoyPort != nil {
-		envoyPort = *config.Spec.EnvoyPort
+	// Determine ingress and egress ports (default to 8080 if unset)
+	ingressPort := int32(8080)
+	if config.Spec.IngressPort != nil {
+		ingressPort = *config.Spec.IngressPort
+	}
+
+	egressPort := int32(8080)
+	if config.Spec.EgressPort != nil {
+		egressPort = *config.Spec.EgressPort
 	}
 
 	// Create or update Envoy ConfigMap
@@ -64,7 +69,7 @@ func (r *RateLimitConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			Namespace: config.Namespace,
 		},
 		Data: map[string]string{
-			"envoy.yaml": generateEnvoyConfig(config, envoyPort),
+			"envoy.yaml": generateEnvoyConfig(config, ingressPort, egressPort),
 		},
 	}
 	if err := ctrl.SetControllerReference(config, envoyConfig, r.Scheme); err != nil {
@@ -77,7 +82,7 @@ func (r *RateLimitConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 		existingConfig := &corev1.ConfigMap{}
 		if err := r.Get(ctx, client.ObjectKey{Namespace: config.Namespace, Name: configMapName}, existingConfig); err == nil {
-			existingConfig.Data["envoy.yaml"] = generateEnvoyConfig(config, envoyPort)
+			existingConfig.Data["envoy.yaml"] = generateEnvoyConfig(config, ingressPort, egressPort)
 			if err := r.Update(ctx, existingConfig); err != nil {
 				log.Error(err, "Failed to update ConfigMap", "name", configMapName)
 				return ctrl.Result{}, err
@@ -93,7 +98,7 @@ func (r *RateLimitConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		VolumeMounts: []corev1.VolumeMount{
 			{Name: "envoy-config", MountPath: "/etc/envoy"},
 		},
-		Ports: []corev1.ContainerPort{{ContainerPort: envoyPort}},
+		Ports: []corev1.ContainerPort{{ContainerPort: ingressPort}},
 	})
 	deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, corev1.Volume{
 		Name: "envoy-config",
@@ -117,7 +122,7 @@ func (r *RateLimitConfigReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	return ctrl.Result{}, nil
 }
 
-func generateEnvoyConfig(config *kaswfyv1.RateLimitConfig, envoyPort int32) string {
+func generateEnvoyConfig(config *kaswfyv1.RateLimitConfig, ingressPort int32, egressPort int32) string {
 	rateLimits := []string{}
 	if config.Spec.MaxRequestsByIpRps != nil {
 		rateLimits = append(rateLimits, fmt.Sprintf(`- actions:
@@ -195,7 +200,7 @@ clusters:
           address:
             socket_address:
               address: 127.0.0.1
-              port_value: 3000`, envoyPort, config.Spec.ClusterName, rateLimitsStr, config.Spec.ClusterName, config.Spec.ClusterName)
+              port_value: %d`, ingressPort, config.Spec.ClusterName, rateLimitsStr, config.Spec.ClusterName, config.Spec.ClusterName, egressPort)
 }
 
 func (r *RateLimitConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {

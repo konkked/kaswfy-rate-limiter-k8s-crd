@@ -44,6 +44,10 @@ spec:
               deploymentName:
                 description: DeploymentName is the target Deployment for rate limiting
                 type: string
+              egressPort:
+                description: EgressPort specifies the port for egress traffic (optional)
+                format: int32
+                type: integer
               envoyPort:
                 description: EnvoyPort specifies the port Envoy listens on (optional,
                   defaults to 8080)
@@ -67,6 +71,10 @@ spec:
                   - rps
                   type: object
                 type: array
+              ingressPort:
+                description: IngressPort specifies the port for ingress traffic (optional)
+                format: int32
+                type: integer
               maxRequestsByIpRps:
                 description: MaxRequestsByIpRps limits requests per IP (optional)
                 format: int32
