@@ -1,0 +1,23 @@
+# permissions for end users to view ratelimitconfigs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: rate-limiter-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: ratelimitconfig-viewer-role
+rules:
+- apiGroups:
+  - kaswfy.kaswfy.io
+  resources:
+  - ratelimitconfigs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - kaswfy.kaswfy.io
+  resources:
+  - ratelimitconfigs/status
+  verbs:
+  - get

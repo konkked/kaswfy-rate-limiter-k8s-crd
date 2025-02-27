@@ -1,0 +1,9 @@
+apiVersion: kaswfy.kaswfy.io/v1
+kind: RateLimitConfig
+metadata:
+  labels:
+    app.kubernetes.io/name: rate-limiter-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: ratelimitconfig-sample
+spec:
+  # TODO(user): Add fields here

@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- kaswfy_v1_ratelimitconfig.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples
